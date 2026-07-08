@@ -39,7 +39,7 @@ Inserted monsters use `statblock` code blocks with YAML fields expected by Fanta
 
 ## Disclosures
 
-- **Network access:** The plugin downloads selected compendium JSON files from the GitHub API at `api.github.com/repos/guykahalani/the-dm-compendium` when the local cache is missing, when sources are changed, or when the refresh command is run.
+- **Network access:** The plugin downloads selected compendium JSON files from `raw.githubusercontent.com/guykahalani/the-dm-compendium` when the local cache is missing or when the refresh command is run. Source changes rebuild the local cache incrementally when possible, fetching only newly added sources and removing disabled sources locally.
 - **Local file access:** The plugin writes cache files into its own plugin folder under `.obsidian/plugins/the-dm-compendium/cache`.
 - **Account requirements:** No account is required.
 - **Telemetry and ads:** The plugin does not collect telemetry, analytics, or usage data, and it does not show ads.
