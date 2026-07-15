@@ -22,7 +22,7 @@ import {
 const SOURCE_CACHE_REFRESH_DEBOUNCE_MS = 1750;
 
 export class DmCompendiumPlugin extends Plugin {
-  settings: DmCompendiumSettings = DEFAULT_SETTINGS;
+  compendiumSettings: DmCompendiumSettings = DEFAULT_SETTINGS;
   private pluginDir = "";
   private sourceRefreshTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -46,14 +46,14 @@ export class DmCompendiumPlugin extends Plugin {
 
   async loadSettings() {
     const loadedSettings = (await this.loadData()) as Partial<DmCompendiumSettings> | null;
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedSettings);
+    this.compendiumSettings = Object.assign({}, DEFAULT_SETTINGS, loadedSettings);
     if (!Array.isArray(loadedSettings?.includedSources)) {
-      this.settings.includedSources = getDefaultIncludedSources();
+      this.compendiumSettings.includedSources = getDefaultIncludedSources();
     }
   }
 
   async saveSettings() {
-    await this.saveData(this.settings);
+    await this.saveData(this.compendiumSettings);
   }
 
   scheduleSourceFilteredCacheRefresh() {
@@ -97,7 +97,7 @@ export class DmCompendiumPlugin extends Plugin {
   }
 
   private async ensureDatabaseCache() {
-    if (await hasDatabaseCache(this.pluginDir, this.settings.includedSources)) {
+    if (await hasDatabaseCache(this.pluginDir, this.compendiumSettings.includedSources)) {
       return;
     }
 
@@ -106,7 +106,7 @@ export class DmCompendiumPlugin extends Plugin {
 
   private async refreshCompendiumDatabase(showSuccessNotice: boolean) {
     try {
-      await refreshDatabaseCache(this.pluginDir, this.settings.includedSources);
+      await refreshDatabaseCache(this.pluginDir, this.compendiumSettings.includedSources);
       if (showSuccessNotice) {
         new Notice("Compendium database refreshed.");
       }
@@ -120,7 +120,7 @@ export class DmCompendiumPlugin extends Plugin {
     try {
       await refreshSourceFilteredDatabaseCache(
         this.pluginDir,
-        this.settings.includedSources
+        this.compendiumSettings.includedSources
       );
     } catch (error) {
       console.error("[DM Compendium] Failed to refresh source-filtered database cache:", error);
@@ -129,7 +129,7 @@ export class DmCompendiumPlugin extends Plugin {
   }
 
   private filterItemsBySource(items: FormatterItem[]) {
-    const includedSources = new Set(this.settings.includedSources.map(normalizeSourceKey));
+    const includedSources = new Set(this.compendiumSettings.includedSources.map(normalizeSourceKey));
     return items.filter((item) => !item.source || includedSources.has(normalizeSourceKey(item.source)));
   }
 }

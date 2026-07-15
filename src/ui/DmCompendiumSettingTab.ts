@@ -10,7 +10,7 @@ import {
 const PRIORITY_SOURCE_KEYS = ["PHB", "XPHB", "DMG", "XDMG", "MM", "XMM"];
 
 export interface DmCompendiumSettingsPlugin {
-  settings: DmCompendiumSettings;
+  compendiumSettings: DmCompendiumSettings;
   saveSettings(): Promise<void>;
   scheduleSourceFilteredCacheRefresh(): void;
 }
@@ -49,7 +49,7 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
         button
           .setButtonText("Defaults")
           .onClick(async () => {
-            this.compendiumPlugin.settings.includedSources = getDefaultIncludedSources();
+            this.compendiumPlugin.compendiumSettings.includedSources = getDefaultIncludedSources();
             await this.compendiumPlugin.saveSettings();
             this.compendiumPlugin.scheduleSourceFilteredCacheRefresh();
             this.display();
@@ -59,7 +59,7 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
         button
           .setButtonText("All")
           .onClick(async () => {
-            this.compendiumPlugin.settings.includedSources = getAllSourceKeys();
+            this.compendiumPlugin.compendiumSettings.includedSources = getAllSourceKeys();
             await this.compendiumPlugin.saveSettings();
             this.compendiumPlugin.scheduleSourceFilteredCacheRefresh();
             this.display();
@@ -69,7 +69,7 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
         button
           .setButtonText("None")
           .onClick(async () => {
-            this.compendiumPlugin.settings.includedSources = [];
+            this.compendiumPlugin.compendiumSettings.includedSources = [];
             await this.compendiumPlugin.saveSettings();
             this.compendiumPlugin.scheduleSourceFilteredCacheRefresh();
             this.display();
@@ -109,7 +109,7 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
   private renderSourceSettings(containerEl: HTMLElement) {
     containerEl.empty();
 
-    const includedSources = this.compendiumPlugin.settings.includedSources.map(normalizeSourceKey);
+    const includedSources = this.compendiumPlugin.compendiumSettings.includedSources.map(normalizeSourceKey);
     const sourceEntries = getSourceEntries()
       .sort(compareSourcesForSettings)
       .filter(([sourceKey, source]) => sourceMatchesSearch(sourceKey, source, this.sourceSearchQuery));
@@ -129,7 +129,7 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
           toggle
             .setValue(includedSources.indexOf(normalizedSourceKey) !== -1)
             .onChange(async (value) => {
-              const nextSources = this.compendiumPlugin.settings.includedSources.map(normalizeSourceKey);
+              const nextSources = this.compendiumPlugin.compendiumSettings.includedSources.map(normalizeSourceKey);
               const existingIndex = nextSources.indexOf(normalizedSourceKey);
               if (value) {
                 if (existingIndex === -1) {
@@ -138,7 +138,7 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
               } else if (existingIndex !== -1) {
                 nextSources.splice(existingIndex, 1);
               }
-              this.compendiumPlugin.settings.includedSources = nextSources.sort();
+              this.compendiumPlugin.compendiumSettings.includedSources = nextSources.sort();
               await this.compendiumPlugin.saveSettings();
               this.compendiumPlugin.scheduleSourceFilteredCacheRefresh();
             });
