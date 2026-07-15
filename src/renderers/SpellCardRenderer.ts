@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, MarkdownRenderer, parseYaml, Plugin } from "obsidian";
+import { MarkdownPostProcessorContext, MarkdownRenderer, MarkdownRenderChild, parseYaml, Plugin } from "obsidian";
 
 interface SpellCardData {
   name?: string;
@@ -118,8 +118,8 @@ function formatRangeForDisplay(spell: SpellCardData): string | undefined {
 
   // If the data gives an area type like "sphere" but the effect is centered on the caster
   // (phrases like "within 30 feet of you"), show "self" instead.
-  const areaTypes = new Set(["sphere", "hemisphere", "cube", "circle", "area"]);
-  if (areaTypes.has(String(range).toLowerCase()) && spell.entries?.length) {
+  const areaTypes = ["sphere", "hemisphere", "cube", "circle", "area"];
+  if (areaTypes.indexOf(String(range).toLowerCase()) !== -1 && spell.entries?.length) {
     const text = spell.entries.join(" ").toLowerCase();
     if (/within\s+\d+\s*-?foot[s]?\s+of\s+(you|yourself)/.test(text) || /within\s+.*\bof\s+(you|yourself)/.test(text)) {
       return "self";
@@ -161,7 +161,9 @@ async function appendMarkdownSection(
   for (const entry of entries) {
     const entryEl = createElement("div", "compendium-spell-card__entry");
     section.appendChild(entryEl);
-    await MarkdownRenderer.render(plugin.app, entry, entryEl, ctx.sourcePath, plugin);
+    const renderChild = new MarkdownRenderChild(entryEl);
+    ctx.addChild(renderChild);
+    await MarkdownRenderer.render(plugin.app, entry, entryEl, ctx.sourcePath, renderChild);
   }
 }
 

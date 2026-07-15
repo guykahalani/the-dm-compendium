@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, MarkdownRenderer, parseYaml, Plugin } from "obsidian";
+import { MarkdownPostProcessorContext, MarkdownRenderer, MarkdownRenderChild, parseYaml, Plugin } from "obsidian";
 
 interface ItemCardData {
   name?: string;
@@ -160,7 +160,9 @@ async function appendMarkdownSection(
   for (const entry of entries) {
     const entryEl = createElement("div", "compendium-item-card__entry");
     section.appendChild(entryEl);
-    await MarkdownRenderer.render(plugin.app, entry, entryEl, ctx.sourcePath, plugin);
+    const renderChild = new MarkdownRenderChild(entryEl);
+    ctx.addChild(renderChild);
+    await MarkdownRenderer.render(plugin.app, entry, entryEl, ctx.sourcePath, renderChild);
   }
 }
 

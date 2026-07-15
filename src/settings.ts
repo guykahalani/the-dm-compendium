@@ -19,9 +19,15 @@ export function normalizeSourceKey(source: string): string {
 }
 
 export function getDefaultIncludedSources(): string[] {
-  return Object.entries(SOURCE_LIST)
-    .filter(([, source]) => source.include)
-    .map(([sourceKey]) => normalizeSourceKey(sourceKey));
+  const includedSources: string[] = [];
+
+  for (const sourceKey in SOURCE_LIST) {
+    if (SOURCE_LIST[sourceKey].include) {
+      includedSources.push(normalizeSourceKey(sourceKey));
+    }
+  }
+
+  return includedSources;
 }
 
 export function getSourceLabel(source: string): string {

@@ -16,13 +16,13 @@ export interface DmCompendiumSettingsPlugin {
 }
 
 export class DmCompendiumSettingTab extends PluginSettingTab {
-  plugin: Plugin & DmCompendiumSettingsPlugin;
+  private compendiumPlugin: Plugin & DmCompendiumSettingsPlugin;
   private sourceSearchQuery = "";
   private sourceSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(app: App, plugin: Plugin & DmCompendiumSettingsPlugin) {
     super(app, plugin);
-    this.plugin = plugin;
+    this.compendiumPlugin = plugin;
   }
 
   display(): void {
@@ -49,9 +49,9 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
         button
           .setButtonText("Defaults")
           .onClick(async () => {
-            this.plugin.settings.includedSources = getDefaultIncludedSources();
-            await this.plugin.saveSettings();
-            this.plugin.scheduleSourceFilteredCacheRefresh();
+            this.compendiumPlugin.settings.includedSources = getDefaultIncludedSources();
+            await this.compendiumPlugin.saveSettings();
+            this.compendiumPlugin.scheduleSourceFilteredCacheRefresh();
             this.display();
           });
       })
@@ -59,9 +59,9 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
         button
           .setButtonText("All")
           .onClick(async () => {
-            this.plugin.settings.includedSources = Object.keys(SOURCE_LIST).map(normalizeSourceKey);
-            await this.plugin.saveSettings();
-            this.plugin.scheduleSourceFilteredCacheRefresh();
+            this.compendiumPlugin.settings.includedSources = getAllSourceKeys();
+            await this.compendiumPlugin.saveSettings();
+            this.compendiumPlugin.scheduleSourceFilteredCacheRefresh();
             this.display();
           });
       })
@@ -69,9 +69,9 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
         button
           .setButtonText("None")
           .onClick(async () => {
-            this.plugin.settings.includedSources = [];
-            await this.plugin.saveSettings();
-            this.plugin.scheduleSourceFilteredCacheRefresh();
+            this.compendiumPlugin.settings.includedSources = [];
+            await this.compendiumPlugin.saveSettings();
+            this.compendiumPlugin.scheduleSourceFilteredCacheRefresh();
             this.display();
           });
       });
@@ -109,8 +109,8 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
   private renderSourceSettings(containerEl: HTMLElement) {
     containerEl.empty();
 
-    const includedSources = new Set(this.plugin.settings.includedSources.map(normalizeSourceKey));
-    const sourceEntries = Object.entries(SOURCE_LIST)
+    const includedSources = this.compendiumPlugin.settings.includedSources.map(normalizeSourceKey);
+    const sourceEntries = getSourceEntries()
       .sort(compareSourcesForSettings)
       .filter(([sourceKey, source]) => sourceMatchesSearch(sourceKey, source, this.sourceSearchQuery));
 
@@ -127,21 +127,44 @@ export class DmCompendiumSettingTab extends PluginSettingTab {
         .setName(`${source.full} (${source.short})`)
         .addToggle((toggle) => {
           toggle
-            .setValue(includedSources.has(normalizedSourceKey))
+            .setValue(includedSources.indexOf(normalizedSourceKey) !== -1)
             .onChange(async (value) => {
-              const nextSources = new Set(this.plugin.settings.includedSources.map(normalizeSourceKey));
+              const nextSources = this.compendiumPlugin.settings.includedSources.map(normalizeSourceKey);
+              const existingIndex = nextSources.indexOf(normalizedSourceKey);
               if (value) {
-                nextSources.add(normalizedSourceKey);
-              } else {
-                nextSources.delete(normalizedSourceKey);
+                if (existingIndex === -1) {
+                  nextSources.push(normalizedSourceKey);
+                }
+              } else if (existingIndex !== -1) {
+                nextSources.splice(existingIndex, 1);
               }
-              this.plugin.settings.includedSources = Array.from(nextSources).sort();
-              await this.plugin.saveSettings();
-              this.plugin.scheduleSourceFilteredCacheRefresh();
+              this.compendiumPlugin.settings.includedSources = nextSources.sort();
+              await this.compendiumPlugin.saveSettings();
+              this.compendiumPlugin.scheduleSourceFilteredCacheRefresh();
             });
         });
     });
   }
+}
+
+function getAllSourceKeys() {
+  const sourceKeys: string[] = [];
+
+  for (const sourceKey in SOURCE_LIST) {
+    sourceKeys.push(normalizeSourceKey(sourceKey));
+  }
+
+  return sourceKeys;
+}
+
+function getSourceEntries(): Array<[string, SourceInfo]> {
+  const sourceEntries: Array<[string, SourceInfo]> = [];
+
+  for (const sourceKey in SOURCE_LIST) {
+    sourceEntries.push([sourceKey, SOURCE_LIST[sourceKey]]);
+  }
+
+  return sourceEntries;
 }
 
 function sourceMatchesSearch(sourceKey: string, source: SourceInfo, query: string) {
