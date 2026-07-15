@@ -1,6 +1,6 @@
 {
   "name": "the-dm-compendium",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Search and insert Dungeons & Dragons 5th Edition monsters, spells, and items into notes.",
   "main": "main.js",
   "scripts": {
