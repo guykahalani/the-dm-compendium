@@ -1,7 +1,7 @@
 {
   "id": "the-dm-compendium",
   "name": "The DM Compendium",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "minAppVersion": "1.4.0",
   "description": "Search and insert Dungeons & Dragons 5th Edition monsters, spells, and items into notes.",
   "author": "guykahalani",
