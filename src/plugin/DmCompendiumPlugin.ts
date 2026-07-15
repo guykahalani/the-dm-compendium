@@ -18,6 +18,9 @@ import {
   refreshSourceFilteredDatabaseCache,
 } from "../utils/databaseCache";
 
+// Give users time to finish reading and toggling source names before rebuilding.
+const SOURCE_CACHE_REFRESH_DEBOUNCE_MS = 1750;
+
 export class DmCompendiumPlugin extends Plugin {
   settings: DmCompendiumSettings = DEFAULT_SETTINGS;
   private pluginDir = "";
@@ -61,7 +64,7 @@ export class DmCompendiumPlugin extends Plugin {
     this.sourceRefreshTimer = setTimeout(async () => {
       this.sourceRefreshTimer = null;
       await this.refreshSourceFilteredCache();
-    }, 900);
+    }, SOURCE_CACHE_REFRESH_DEBOUNCE_MS);
   }
 
   async getItems(dataType: string): Promise<FormatterItem[]> {
